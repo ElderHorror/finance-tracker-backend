@@ -6,19 +6,21 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
-    data = request.json.get('expenses', [])
+    data = request.json.get("expenses", [])
     if len(data) < 2:
-        return jsonify({'error': 'Need at least 2 weeks of data'}), 400
+        return jsonify({"error": "Need at least 2 weeks of data"}), 400
     weeks = np.array(range(1, len(data) + 1)).reshape(-1, 1)
-    amounts = np.array([exp['amount'] for exp in data])
+    amounts = np.array([exp["amount"] for exp in data])
     model = LinearRegression()
     model.fit(weeks, amounts)
-    next_week = model.predict([[len(data) + 1]])
-    return jsonify({'prediction': round(next_week[0], 2)})
+    next_week = model.predict([[len(data) + 1]])[0]
+    avg = np.mean(amounts)  # Fallback average
+    prediction = min(max(next_week, 0), avg * 2)  # Cap at 2x average, floor at 0
+    return jsonify({"prediction": round(prediction, 2)})
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
