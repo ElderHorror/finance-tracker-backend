@@ -1,0 +1,6 @@
+[phases.setup]
+  nixPkgs = ['python3', 'gunicorn']
+[phases.build]
+  cmds = ['pip install -r requirements.txt']
+[start]
+  cmd = 'gunicorn app:app'
