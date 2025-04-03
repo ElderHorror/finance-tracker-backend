@@ -4,20 +4,21 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from React (localhost:5173)
+CORS(app)
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
-    data = request.json.get("expenses", [])  # Expecting [{amount: 50}, {amount: 60}]
+    data = request.json.get('expenses', [])
     if len(data) < 2:
-        return jsonify({"error": "Need at least 2 weeks of data"}), 400
-
-    weeks = np.array(range(1, len(data) + 1)).reshape(-1, 1)  # [[1], [2], ...]
-    amounts = np.array([exp["amount"] for exp in data])       # [50, 60, ...]
+        return jsonify({'error': 'Need at least 2 weeks of data'}), 400
+    weeks = np.array(range(1, len(data) + 1)).reshape(-1, 1)
+    amounts = np.array([exp['amount'] for exp in data])
     model = LinearRegression()
     model.fit(weeks, amounts)
     next_week = model.predict([[len(data) + 1]])
-    return jsonify({"prediction": round(next_week[0], 2)})
+    return jsonify({'prediction': round(next_week[0], 2)})
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
